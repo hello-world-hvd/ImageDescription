@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+.venv/
+env/
+
+# ENV
+.env
+
+# Modal / cache
+*.pth
+/model/
+
+# Huggingface cache
+.cache/
+
+# Data (rất quan trọng)
+data/
+*.pkl
+
+# OS
+.DS_Store
