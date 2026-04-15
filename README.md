@@ -137,8 +137,5 @@ The model was trained for **8 epochs** with a gradual unfreezing strategy for CL
 | 8     | 2.60       | 3.20            | Unfrozen |
 
 ### Output
+<img width="1472" height="1489" alt="image" src="https://github.com/user-attachments/assets/1c40ded3-9373-41cb-a8af-a8dde8ec1ea9" />
 
-{
-'image_id': '000000244750.jpg',
-'caption': 'a group of people sitting at a table with wine glasses'
-}
