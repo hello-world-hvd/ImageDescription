@@ -121,21 +121,7 @@ Edit `config.py` to adjust:
 
 ## 📊 Results
 
-### Training Performance
-
-The model was trained for **8 epochs** with a gradual unfreezing strategy for CLIP.
-
-| Epoch | Train Loss | Val Loss        | CLIP     |
-| ----- | ---------- | --------------- | -------- |
-| 1     | 3.81       | 3.47            | Frozen   |
-| 2     | 3.28       | 3.30            | Frozen   |
-| 3     | 3.11       | 3.23            | Frozen   |
-| 4     | 2.97       | ~3.20           | Frozen   |
-| 5     | 2.87       | ~3.18           | Unfrozen |
-| 6     | 2.79       | **3.17 (Best)** | Unfrozen |
-| 7     | 2.70       | 3.19            | Unfrozen |
-| 8     | 2.60       | 3.20            | Unfrozen |
-
 ### Output
-<img width="1472" height="1489" alt="image" src="https://github.com/user-attachments/assets/1c40ded3-9373-41cb-a8af-a8dde8ec1ea9" />
+<img width="1472" height="1489" alt="download" src="https://github.com/user-attachments/assets/3e67cf36-fa0e-4106-baea-414514c250cd" />
+
 
