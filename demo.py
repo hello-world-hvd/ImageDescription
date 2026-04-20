@@ -10,7 +10,7 @@ import torch.optim as optim
 from datasets import load_dataset
 from transformers import CLIPImageProcessor
 
-from checkpoint import load_checkpoint
+from checkpoint import load_checkpoint, upload_best_model
 from config import CFG
 from data import load_artifacts_from_hub, _hf_token
 from inference import beam_search_decode
@@ -71,7 +71,7 @@ def demo(image_id: Optional[str] = None, split_name: str = "test"):
             raise ValueError(f"image_id={image_id} not found in split={split_name}")
         sample = matches[0]
     else:
-        sample = split[0]
+        sample = split[1]
 
     # Generate caption
     image = sample["image"].convert("RGB")
@@ -86,6 +86,7 @@ def demo(image_id: Optional[str] = None, split_name: str = "test"):
         length_penalty=CFG.length_penalty,
         no_repeat_ngram_size=CFG.no_repeat_ngram_size,
     )
+    upload_best_model()
 
     return {
         "image_id": sample["image_id"],

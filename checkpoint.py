@@ -5,9 +5,10 @@ from dataclasses import asdict
 
 import torch
 
-from config import Config
+from config import Config, CFG
 from utils import ensure_dir
 from vocabulary import Vocabulary
+from huggingface_hub import upload_file
 
 
 def save_checkpoint(path: str, model, optimizer, epoch: int, loss: float, vocab: Vocabulary, cfg: Config):
@@ -91,3 +92,22 @@ def try_resume_training(checkpoint_path, model, optimizer, device):
     
     print("🆕 No checkpoint found → Training from scratch")
     return 0, float("inf"), None
+
+def upload_best_model():
+    repo_id = "hellloooworlddd123/imageDescription"  
+
+    file_path = CFG.best_model_path
+
+    if not os.path.exists(file_path):
+        print("Best model not found!!!")
+        return
+
+    upload_file(
+        path_or_fileobj=file_path,
+        path_in_repo="models/clip_transformer_best.pth",  # 👈 đặt folder đẹp
+        repo_id=repo_id,
+        repo_type="dataset",  # hoặc "model"
+        token=os.getenv("HF_TOKEN"),
+    )
+
+    print(" Uploaded best model to HuggingFace!")

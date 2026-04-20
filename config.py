@@ -34,14 +34,15 @@ class Config:
     # Training
     lr: float = 1e-4
     weight_decay: float = 1e-4
-    label_smoothing: float = 0.1
-    num_epochs: int = 8
+    label_smoothing: float = 0.05
+    num_epochs: int = 12
+    num_warmup_steps: int = 1200
     grad_clip: float = 1.0
     use_amp: bool = True
 
     # Freeze / unfreeze schedule
     freeze_clip_epochs: int = 3
-    clip_lr_scale: float = 0.02
+    clip_lr_scale: float = 0.1
     clip_grad_clip: float = 1.0
 
     # Beam search / inference

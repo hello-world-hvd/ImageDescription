@@ -22,7 +22,7 @@ def compute_loss(outputs, targets, criterion):
     return criterion(outputs.reshape(-1, outputs.size(-1)), targets.reshape(-1))
 
 
-def train_one_epoch(model, loader, criterion, optimizer, device, scaler=None, grad_clip: float = 1.0):
+def train_one_epoch(model, loader, criterion, optimizer, device, scaler=None, grad_clip: float = 1.0, scheduler=None):
     """
     Train for one epoch
     
@@ -62,12 +62,18 @@ def train_one_epoch(model, loader, criterion, optimizer, device, scaler=None, gr
             torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
             scaler.step(optimizer)
             scaler.update()
+            
+            if scheduler is not None:
+                scheduler.step()
         else:
             outputs = model(images, captions_in)
             loss = compute_loss(outputs, captions_out, criterion)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
             optimizer.step()
+            
+            if scheduler is not None:
+                scheduler.step()
 
         total_loss += loss.item()
         avg_loss = total_loss / (i + 1)

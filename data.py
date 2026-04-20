@@ -10,7 +10,6 @@ from config import CFG
 from vocabulary import Vocabulary
 from utils import load_json, load_pickle
 
-
 def _hf_token() -> Optional[str]:
     """Get Hugging Face token from environment"""
     return os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_HUB_TOKEN")
@@ -61,24 +60,17 @@ class CaptionDataset(Dataset):
         vocab: Vocabulary,
         processor,
         max_len: int = 30,
+        is_train: bool = False,
+        transform=None,
     ):
-        """
-        Initialize caption dataset
-        
-        Args:
-            hf_split: Hugging Face dataset split
-            image_names: List of image IDs
-            captions: List of caption texts
-            vocab: Vocabulary instance
-            processor: CLIP image processor
-            max_len: Maximum caption length
-        """
         self.hf_split = hf_split
         self.image_names = image_names
         self.captions = captions
         self.vocab = vocab
         self.processor = processor
         self.max_len = max_len
+        self.is_train = is_train
+        self.transform = transform
         self.image_index = {ex["image_id"]: i for i, ex in enumerate(hf_split)}
 
     def __len__(self) -> int:
@@ -93,6 +85,8 @@ class CaptionDataset(Dataset):
         # Get image from HF dataset
         row = self.hf_split[self.image_index[image_name]]
         image = row["image"].convert("RGB")
+        if self.is_train and self.transform is not None:
+            image = self.transform(image)
         pixel_values = self.processor(images=image, return_tensors="pt")["pixel_values"].squeeze(0)
 
         # Numericalize caption with BOS/EOS tokens

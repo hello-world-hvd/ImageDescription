@@ -10,7 +10,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from datasets import load_dataset
-from transformers import CLIPImageProcessor
+from transformers import CLIPImageProcessor, get_cosine_schedule_with_warmup
+from torchvision import transforms
 
 from checkpoint import load_checkpoint, save_checkpoint, try_resume_training
 from config import CFG
@@ -76,6 +77,17 @@ def train():
     train_image_names, train_captions = build_pairs(train_ids, train_descriptions)
     val_image_names, val_captions = build_pairs(val_ids, val_descriptions)
 
+    train_transform = transforms.Compose([
+        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ColorJitter(
+            brightness=0.2,
+            contrast=0.2,
+            saturation=0.2,
+            hue=0.05
+        ),
+    ])
+    
     train_dataset = CaptionDataset(
         hf_split=train_split,
         image_names=train_image_names,
@@ -83,7 +95,10 @@ def train():
         vocab=vocab,
         processor=processor,
         max_len=CFG.max_len,
+        is_train=True,
+        transform=train_transform,
     )
+
     val_dataset = CaptionDataset(
         hf_split=val_split,
         image_names=val_image_names,
@@ -91,6 +106,8 @@ def train():
         vocab=vocab,
         processor=processor,
         max_len=CFG.max_len,
+        is_train=False,
+        transform=None,
     )
 
     pad_idx = vocab.word2idx["<pad>"]
@@ -145,13 +162,18 @@ def train():
             {"params": clip_params, "lr": 0.0, "weight_decay": CFG.weight_decay},
         ]
     )
-
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    scheduler = get_cosine_schedule_with_warmup(
         optimizer,
-        mode="min",
-        factor=0.5,
-        patience=2,
+        num_warmup_steps=CFG.num_warmup_steps,
+        num_training_steps=len(train_loader) * CFG.num_epochs
     )
+
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    #     optimizer,
+    #     mode="min",
+    #     factor=0.5,
+    #     patience=2,
+    # )
     scaler = torch.cuda.amp.GradScaler(enabled=(CFG.use_amp and device.type == "cuda"))
 
     start_epoch, best_loss, loaded_vocab = try_resume_training(
@@ -169,10 +191,10 @@ def train():
         set_clip_phase(model, optimizer, epoch)
 
         train_loss = train_one_epoch(
-            model, train_loader, criterion, optimizer, device, scaler, CFG.grad_clip
+            model, train_loader, criterion, optimizer, device, scaler, CFG.grad_clip, scheduler
         )
         val_loss = evaluate(model, val_loader, criterion, device)
-        scheduler.step(val_loss)
+        # scheduler.step(val_loss)   # if using ReduceLROnPlateau, step with val_loss;
 
         print(
             f"\n====== Epoch {epoch + 1:02d}/{CFG.num_epochs} | train_loss={train_loss:.6f} | val_loss={val_loss:.6f}======"
